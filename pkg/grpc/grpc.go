@@ -139,7 +139,7 @@ func CopyToServerStream(r io.ReadCloser, stream grpc.ServerStream, nrf NewReques
 
 }
 
-func CopyFromServerStream(w *io.PipeWriter, stream grpc.ServerStream, reply any, rcdf ReadChunkDataFunc) error {
+func CopyFromServerStream(w io.Writer, stream grpc.ServerStream, reply any, rcdf ReadChunkDataFunc) error {
 	for {
 		err := contextError(stream.Context())
 		if err != nil {
@@ -148,12 +148,10 @@ func CopyFromServerStream(w *io.PipeWriter, stream grpc.ServerStream, reply any,
 
 		err = stream.RecvMsg(reply)
 		if err == io.EOF {
-			_ = w.Close()
-			break
+			return err
 		}
 		if err != nil {
-			_ = w.CloseWithError(err)
-			break
+			return err
 		}
 
 		chunk := rcdf(reply)
@@ -162,7 +160,7 @@ func CopyFromServerStream(w *io.PipeWriter, stream grpc.ServerStream, reply any,
 			_, err = w.Write(chunk)
 			if err != nil {
 				//				_ = stream.CloseSend()
-				break
+				return err
 			}
 		}
 		//		chunk = chunk[:0]
