@@ -18,10 +18,6 @@ type MessageStreamer interface {
 	Context() context.Context
 }
 
-type MessageStreamCloser interface {
-	CloseSend() error
-}
-
 type Opts struct {
 	BufferSize int
 }
@@ -65,7 +61,6 @@ func CopyToMessageStream(r io.ReadCloser, stream MessageStreamer, nrf NewRequest
 	return nil
 }
 
-
 func CopyFromMessageStream(w io.Writer, stream MessageStreamer, reply any, rcdf ReadChunkDataFunc) (err error) {
 	for {
 		err = contextError(stream.Context())
@@ -86,10 +81,6 @@ func CopyFromMessageStream(w io.Writer, stream MessageStreamer, reply any, rcdf 
 		if len(chunk) > 0 {
 			_, err = w.Write(chunk)
 			if err != nil {
-				if cs, ok := stream.(MessageStreamCloser); ok {
-					_ = cs.CloseSend()
-				}
-
 				return err
 			}
 		}
