@@ -4,6 +4,7 @@
 package log
 
 import (
+	"fmt"
 	adapters "github.com/luminosita/common-bee/pkg/log/adapters"
 	"github.com/sirupsen/logrus"
 	"sync"
@@ -45,4 +46,9 @@ func LogError(err error) error {
 		Log().Error(err)
 	}
 	return err
+}
+
+func LogErrorf(format string, a ...any) error {
+	err := fmt.Errorf(format, a...)
+	return LogError(err)
 }
